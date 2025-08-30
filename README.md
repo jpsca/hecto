@@ -1,4 +1,4 @@
-# ![Hecto(graph)](https://raw.githubusercontent.com/jpsca/hecto/refs/heads/main/hecto.png)
+# ![Hecto(graph)](https://raw.githubusercontent.com/jpsca/hecto/refs/heads/main/hecto.png) Hecto(graph)
 
 A **library** for rendering projects templates.
 
