@@ -1,4 +1,7 @@
-# ![Hecto(graph)](https://raw.githubusercontent.com/jpsca/hecto/refs/heads/main/hecto.png) Hecto(graph)
+<h1>
+<img src="https://raw.githubusercontent.com/jpsca/hecto/refs/heads/main/hecto.png" align="middle" />
+Hecto<sup>(graph)</sup>
+</h1>
 
 A **library** for rendering projects templates.
 
