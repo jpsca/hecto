@@ -6,7 +6,6 @@ from collections.abc import Sequence
 from fnmatch import fnmatch
 from pathlib import Path
 
-import isort
 import jinja2
 
 from . import vcs
@@ -16,8 +15,6 @@ from .utils import COLORS, JinjaRender, printf
 
 __all__ = (
     "render_blueprint",
-    "sort_imports",
-    "sort_imports_in",
 )
 
 IGNORE = (
@@ -238,25 +235,3 @@ def confirm_overwrite(dst_relpath: str | Path, *, force=False) -> bool:
     if force:
         return True
     return confirm(" Overwrite?")
-
-
-def sort_imports(code: str) -> str:
-    """
-    Sort imports in the given code.
-    """
-    return isort.code(
-        code,
-        float_to_top=True,
-        use_parentheses=True,
-        lines_after_imports=2,
-        combine_star=True,
-        include_trailing_comma=True,
-    )
-
-
-def sort_imports_in(path: Path) -> None:
-    """
-    Sort imports in the given file.
-    """
-    code = sort_imports(path.read_text())
-    path.write_text(code)
