@@ -62,6 +62,7 @@ def render_blueprint(
             Context variables for Jinja2 templates.
         ignore:
             List of file patterns to ignore.
+            Default is (".DS_Store", "__pycache__", "*/__pycache__", "*/.DS_Store")
         envops:
             Jinja2 environment options.
         force:

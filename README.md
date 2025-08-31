@@ -3,7 +3,7 @@
 Hecto<sup>(graph)</sup>
 </h1>
 
-A **library** for rendering projects templates.
+A small **library** for rendering blueprints of projects.
 
 * Works with **local** paths and **git URLs**.
 * Your project can include any file and **Hecto** can dynamically replace values in any kind of text files.
@@ -32,7 +32,7 @@ render_blueprint('gl:jpsca/base36.git', 'path/to/destination')
 ```
 
 
-## How it works
+## How does it works
 
 For each file, if the file has a `.tt`, `.append`, or `.prepend` extension,
 even if the extension is not the *last one*, like `*.tt.py`, it will be treated
@@ -49,6 +49,7 @@ You can also use these delimiters in your file names.
 
 If the files already exists and `force` is `False`, you will be asked for
 confirmation before overwriting them.
+
 
 ## API
 
@@ -75,6 +76,7 @@ def render_blueprint(
             Context variables for Jinja2 templates.
         ignore:
             List of file patterns to ignore.
+            Default is (".DS_Store", "__pycache__", "*/__pycache__", "*/.DS_Store")
         envops:
             Jinja2 environment options.
         force:
