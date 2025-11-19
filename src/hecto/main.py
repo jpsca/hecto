@@ -91,7 +91,8 @@ def render_blueprint(
     render = JinjaRender(src, **(envops or {}))
     render.globals.update(context or {})
 
-    for folder, _, files in os.walk(src):
+    folders = [(folder, files) for folder, _, files in os.walk(src)]
+    for folder, files in folders:
         folder = Path(folder)
         if must_ignore(folder, ignore):
             return
