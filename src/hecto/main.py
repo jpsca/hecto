@@ -95,7 +95,7 @@ def render_blueprint(
     for folder, files in folders:
         folder = Path(folder)
         if must_ignore(folder, ignore):
-            return
+            continue
         _src_relfolder = str(folder).replace(str(src), "", 1).lstrip(os.path.sep)
         _dst_relfolder = render.string(_src_relfolder)
         src_relfolder = Path(_src_relfolder)
