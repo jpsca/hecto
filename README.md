@@ -1,5 +1,5 @@
 <h1>
-<img src="./hecto.png" align="middle" />
+<img src="https://raw.githubusercontent.com/jpsca/hecto/main/hecto.png" align="middle" />
 Hecto<sup>(graph)</sup>
 </h1>
 
