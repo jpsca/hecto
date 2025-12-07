@@ -29,6 +29,8 @@ render_blueprint('https://github.com/jpsca/base36.git', 'path/to/destination')
 render_blueprint('gh:jpsca/base36.git', 'path/to/destination')
 render_blueprint('gl:jpsca/base36.git', 'path/to/destination')
 
+# You can also specify a subfolder inside the repo using `#` as a separator:
+render_blueprint('gh:jpsca/base36.git#blueprint/new', 'path/to/destination')
 ```
 
 
@@ -61,7 +63,6 @@ def render_blueprint(
     dst: str | Path,
     context: dict[str, t.Any] | None = None,
     *,
-    src_path: str | Path | None = None,
     ignore: Sequence[str] = IGNORE,
     envops: dict | None = None,
     force: bool = False,
@@ -92,8 +93,6 @@ def render_blueprint(
             Destination path for the blueprint.
         context:
             Context variables for Jinja2 templates.
-        src_path:
-            Optional source path within the source folder. Useful if `src` is a repository URL.
         ignore:
             List of file patterns to ignore.
             Default is (".DS_Store", "__pycache__", "*/__pycache__", "*/.DS_Store")

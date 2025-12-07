@@ -4,7 +4,7 @@ requires = ["setuptools"]
 
 [project]
 name = "hecto"
-version = "2.1.0"
+version = "2.2.0"
 description = "A small library for rendering blueprints of projects"
 authors = [
     {name = "Juan Pablo Scaletti", email = "juanpablo@jpscaletti.com"},

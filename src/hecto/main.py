@@ -30,7 +30,6 @@ def render_blueprint(
     dst: str | Path,
     context: dict[str, t.Any] | None = None,
     *,
-    src_path: str | Path | None = None,
     ignore: Sequence[str] = IGNORE,
     envops: dict | None = None,
     force: bool = False,
@@ -61,8 +60,6 @@ def render_blueprint(
             Destination path for the blueprint.
         context:
             Context variables for Jinja2 templates.
-        src_path:
-            Optional source path within the source folder. Useful if `src` is a repository URL.
         ignore:
             List of file patterns to ignore.
             Default is (".DS_Store", "__pycache__", "*/__pycache__", "*/.DS_Store")
@@ -72,8 +69,12 @@ def render_blueprint(
             Whether to overwrite existing files without asking for confirmation.
 
     """
+    src_path = ""
+
     repo = vcs.get_repo(src)
     if repo:
+        if "#" in str(src):
+            src, src_path = str(src).split("#", 1)
         src = vcs.clone(repo)
 
     src = Path(src)
