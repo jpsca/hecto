@@ -30,6 +30,7 @@ def render_blueprint(
     dst: str | Path,
     context: dict[str, t.Any] | None = None,
     *,
+    src_path: str | Path | None = None,
     ignore: Sequence[str] = IGNORE,
     envops: dict | None = None,
     force: bool = False,
@@ -60,6 +61,8 @@ def render_blueprint(
             Destination path for the blueprint.
         context:
             Context variables for Jinja2 templates.
+        src_path:
+            Optional source path within the source folder. Useful if `src` is a repository URL.
         ignore:
             List of file patterns to ignore.
             Default is (".DS_Store", "__pycache__", "*/__pycache__", "*/.DS_Store")
@@ -74,6 +77,9 @@ def render_blueprint(
         src = vcs.clone(repo)
 
     src = Path(src)
+    if src_path:
+        src = src / src_path
+
     if not src.is_dir():
         raise ValueError(f"Source directory '{src}' does not exist")
 
