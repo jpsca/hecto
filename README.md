@@ -61,11 +61,29 @@ def render_blueprint(
     dst: str | Path,
     context: dict[str, t.Any] | None = None,
     *,
-    ignore: list[str] | None = None,
+    src_path: str | Path | None = None,
+    ignore: Sequence[str] = IGNORE,
     envops: dict | None = None,
     force: bool = False,
 ) -> None:
     """
+    Renders a blueprint into a destination folder.
+
+    For each file, if the file has a `.tt`, `.append`, or `.prepend` extension,
+    even if the extension is not the *last one*, like `*.tt.py`, it will be treated
+    as a template file and rendered with the provided context.
+
+    * `.tt` files will be rendered and saved to its destinations.
+    * `.append` files will be rendered and appended to its destinations.
+    * `.prepend` files will be rendered and prepended to its destinations.
+    * Other files will be copied as-is.
+
+    To be able to work with regular Jinja files, the files are rendered using
+    `[[` and `]]` instead of `{{` and `}}`; and `[%` and `%]` instead of `{%` and `%}`.
+    You can also use these delimiters in your file names.
+
+    If the files already exists and `force` is `False`, you will be asked for
+    confirmation before overwriting them.
 
     Arguments:
         src:
@@ -74,6 +92,8 @@ def render_blueprint(
             Destination path for the blueprint.
         context:
             Context variables for Jinja2 templates.
+        src_path:
+            Optional source path within the source folder. Useful if `src` is a repository URL.
         ignore:
             List of file patterns to ignore.
             Default is (".DS_Store", "__pycache__", "*/__pycache__", "*/.DS_Store")
