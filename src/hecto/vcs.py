@@ -3,6 +3,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 
 
 __all__ = (
@@ -17,8 +18,8 @@ RE_GITHUB = re.compile(r"^gh:/?")
 RE_GITLAB = re.compile(r"^gl:/?")
 
 
-def get_repo(url):
-    url = str(url)  # In case we have got a `pathlib.Path`
+def get_repo(url: str | Path) -> str | None:
+    url = str(url)
     if not (url.endswith(GIT_POSTFIX) or url.startswith(GIT_PREFIX)):
         return None
 

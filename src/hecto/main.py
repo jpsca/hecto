@@ -69,18 +69,7 @@ def render_blueprint(
             Whether to overwrite existing files without asking for confirmation.
 
     """
-    src_path = ""
-
-    repo = vcs.get_repo(src)
-    if repo:
-        if "#" in str(src):
-            src, src_path = str(src).split("#", 1)
-        src = vcs.clone(repo)
-
-    src = Path(src)
-    if src_path:
-        src = src / src_path
-
+    src = get_src(src)
     if not src.is_dir():
         raise ValueError(f"Source directory '{src}' does not exist")
 
@@ -134,6 +123,22 @@ def render_blueprint(
             else:
                 dst_relpath = dst_relfolder / name
                 copy_file(src / src_relpath, dst, dst_relpath)
+
+
+def get_src(src: str | Path) -> Path:
+    src_path = ""
+    if "#" in str(src):
+        src, src_path = str(src).split("#", 1)
+
+    repo = vcs.get_repo(src)
+    if repo:
+        src = vcs.clone(repo)
+
+    src = Path(src)
+    if src_path:
+        src = src / src_path
+
+    return src
 
 
 def must_ignore(path: Path, ignore: Sequence[str]) -> bool:
