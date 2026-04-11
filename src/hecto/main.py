@@ -92,8 +92,6 @@ def render_blueprint(
         folder = Path(folder_str)
         rel = folder.relative_to(src)
         dirnames[:] = [d for d in dirnames if not must_ignore(rel / d, ignore)]
-        if must_ignore(rel, ignore):
-            continue
         src_relfolder = rel
         dst_relfolder = Path(render.string(str(src_relfolder)))
 
