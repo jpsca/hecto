@@ -16,8 +16,8 @@ def ask(question: str, default: t.Any = None, alternatives: str = "") -> t.Any:
             Alternatives to display. eg: "Y/n"
 
     """
-    ops = alternatives or default
-    question += f" [{str(ops)}] " if ops else ""
+    ops = alternatives if alternatives else default
+    question += f" [{ops}] " if ops is not None and ops != "" else ""
     while True:
         resp = input(question)
         if resp:
@@ -49,22 +49,14 @@ def confirm(
             Default 'n', 'no', '0', 'off', 'false', 'f'
 
     """
-    yes_choices = yes_choices or YES_CHOICES
-    no_choices = no_choices or NO_CHOICES
-
     default_value = yes_choices[0] if default else no_choices[0]
-    if default is None:
-        options = f"{yes_choices[0]}|{no_choices[0]}"
+    if default:
+        options = f"{yes_choices[0].title()}/{no_choices[0]}"
     else:
-        if default:
-            options = f"{yes_choices[0].title()}/{no_choices[0]}"
-        else:
-            options = f"{yes_choices[0]}/{no_choices[0].title()}"
+        options = f"{yes_choices[0]}/{no_choices[0].title()}"
 
     while True:
         resp = ask(question, default_value, options)
-        if default is not None:
-            resp = resp or str(default)
         resp = resp.lower()
         if resp in yes_choices:
             return True

@@ -40,10 +40,10 @@ class JinjaRender:
         self.loader = jinja2.FileSystemLoader(str(templates))
         self.env = jinja2.Environment(
             loader=self.loader,
-            autoescape=jinja2.select_autoescape(default=True),
+            autoescape=False,
             **envops,
         )
-        self.env.globals["render"] = self.render
+        self.env.globals["render"] = self.render  # ty: ignore[invalid-assignment]
 
     @property
     def globals(self) -> dict:
@@ -75,7 +75,7 @@ def printf(
     color: int = COLORS.CYAN,
     indent: int = 10,
 ) -> None:
-    verb = f"\033[{color}m{verb}\033[0m".rjust(indent, " ")
-    print(f"{verb}  {msg}".rstrip())
+    padded = verb.rjust(indent)
+    print(f"\033[{color}m{padded}\033[0m  {msg}".rstrip())
 
 

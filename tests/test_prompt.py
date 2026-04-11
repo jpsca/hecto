@@ -88,3 +88,10 @@ def test_confirm_default_false(stdin, capsys):
     stdout, _ = capsys.readouterr()
     assert response is False
     assert stdout == f"{question} [y/N] "
+
+
+def test_confirm_invalid_then_valid(stdin, capsys):
+    question = "Are you sure?"
+    stdin.append("maybe\ny\n")
+    response = confirm(question)
+    assert response is True

@@ -19,6 +19,11 @@ def test_get_repo():
     assert get("git://git.myproject.org/MyProject.git@v1.0")
     assert get("git://git.myproject.org/MyProject.git@da39a3ee5e6b4b0d3255bfef956018")
 
+    # gh:/gl: shorthand without .git suffix
+    assert get("gh:jpsca/hecto") == "https://github.com/jpsca/hecto"
+    assert get("gl:jpsca/hecto") == "https://gitlab.com/jpsca/hecto"
+    assert get("gh:/jpsca/hecto") == "https://github.com/jpsca/hecto"
+
     assert get("http://google.com") is None
     assert get("git.myproject.org/MyProject") is None
 

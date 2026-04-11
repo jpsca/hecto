@@ -1,3 +1,4 @@
+import atexit
 import os
 import re
 import shutil
@@ -11,7 +12,7 @@ __all__ = (
     "clone",
 )
 
-GIT_PREFIX = ("git@", "git://", "git+")
+GIT_PREFIX = ("git@", "git://", "git+", "gh:", "gl:")
 GIT_POSTFIX = (".git",)
 
 RE_GITHUB = re.compile(r"^gh:/?")
@@ -31,10 +32,10 @@ def get_repo(url: str | Path) -> str | None:
     return url
 
 
-def clone(url):
+def clone(url: str) -> str:
     location = tempfile.mkdtemp()
-    shutil.rmtree(location)  # Path must not exists
     subprocess.check_call(["git", "clone", url, location])
     git_folder = os.path.join(location, ".git")
     shutil.rmtree(git_folder)
+    atexit.register(shutil.rmtree, location, True)
     return location

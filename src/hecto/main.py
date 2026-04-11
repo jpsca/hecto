@@ -37,13 +37,14 @@ def render_blueprint(
     """
     Renders a blueprint into a destination folder.
 
-    For each file, if the file has a `.tt`, `.append`, or `.prepend` extension,
-    even if the extension is not the *last one*, like `*.tt.py`, it will be treated
-    as a template file and rendered with the provided context.
+    For each file, if the file has a `.tt`, `.append`, `.prepend`, or `.delete`
+    extension, even if the extension is not the *last one*, like `*.tt.py`, it will
+    be treated as a special file.
 
     * `.tt` files will be rendered and saved to its destinations.
     * `.append` files will be rendered and appended to its destinations.
     * `.prepend` files will be rendered and prepended to its destinations.
+    * `.delete` files will cause matching destination files to be deleted.
     * Other files will be copied as-is.
 
     To be able to work with regular Jinja files, the files are rendered using
@@ -83,19 +84,18 @@ def render_blueprint(
     envops.setdefault("comment_start_string", "[#")
     envops.setdefault("comment_end_string", "#]")
     envops.setdefault("keep_trailing_newline", True)
-    envops["undefined"] = jinja2.StrictUndefined
-    render = JinjaRender(src, **(envops or {}))
+    envops.setdefault("undefined", jinja2.StrictUndefined)
+    render = JinjaRender(src, **envops)
     render.globals.update(context or {})
 
-    folders = [(folder, files) for folder, _, files in os.walk(src)]
-    for folder, files in folders:
-        folder = Path(folder)
-        if must_ignore(folder, ignore):
+    for folder_str, dirnames, files in os.walk(src):
+        folder = Path(folder_str)
+        rel = folder.relative_to(src)
+        dirnames[:] = [d for d in dirnames if not must_ignore(rel / d, ignore)]
+        if must_ignore(rel, ignore):
             continue
-        _src_relfolder = str(folder).replace(str(src), "", 1).lstrip(os.path.sep)
-        _dst_relfolder = render.string(_src_relfolder)
-        src_relfolder = Path(_src_relfolder)
-        dst_relfolder = Path(_dst_relfolder)
+        src_relfolder = rel
+        dst_relfolder = Path(render.string(str(src_relfolder)))
 
         make_folder(dst, dst_relfolder)
 
@@ -103,42 +103,49 @@ def render_blueprint(
             src_relpath = src_relfolder / name
             if must_ignore(src_relpath, ignore):
                 continue
-            name = render.string(name)
+            rendered_name = render.string(name)
 
-            if ".tt." in name or name.endswith(".tt"):
-                dst_name = name.replace(".tt", "")
+            if ".tt." in rendered_name or rendered_name.endswith(".tt"):
+                dst_name = rendered_name.replace(".tt", "", 1)
                 dst_relpath = dst_relfolder / dst_name
                 content = render(src_relpath)
                 save_file(dst, dst_relpath, content, force=force)
-            elif ".append." in name or name.endswith(".append"):
-                dst_name = name.replace(".append", "")
+            elif ".append." in rendered_name or rendered_name.endswith(".append"):
+                dst_name = rendered_name.replace(".append", "", 1)
                 dst_relpath = dst_relfolder / dst_name
                 content = render(src_relpath)
                 append_to_file(dst, dst_relpath, content)
-            elif ".prepend." in name or name.endswith(".prepend"):
-                dst_name = name.replace(".prepend", "")
+            elif ".prepend." in rendered_name or rendered_name.endswith(".prepend"):
+                dst_name = rendered_name.replace(".prepend", "", 1)
                 dst_relpath = dst_relfolder / dst_name
                 content = render(src_relpath)
                 prepend_to_file(dst, dst_relpath, content)
+            elif ".delete." in rendered_name or rendered_name.endswith(".delete"):
+                dst_name = rendered_name.replace(".delete", "", 1)
+                dst_relpath = dst_relfolder / dst_name
+                delete_file(dst, dst_relpath)
             else:
-                dst_relpath = dst_relfolder / name
-                copy_file(src / src_relpath, dst, dst_relpath)
+                dst_relpath = dst_relfolder / rendered_name
+                copy_file(src / src_relpath, dst, dst_relpath, force=force)
 
 
 def get_src(src: str | Path) -> Path:
+    src_str = str(src)
     src_path = ""
-    if "#" in str(src):
-        src, src_path = str(src).split("#", 1)
 
-    repo = vcs.get_repo(src)
+    if "#" in src_str:
+        url_part, src_path = src_str.split("#", 1)
+        repo = vcs.get_repo(url_part)
+        if repo:
+            return Path(vcs.clone(repo)) / src_path
+        # Not a git URL — treat the whole string as a local path
+        return Path(src)
+
+    repo = vcs.get_repo(src_str)
     if repo:
-        src = vcs.clone(repo)
+        return Path(vcs.clone(repo))
 
-    src = Path(src)
-    if src_path:
-        src = src / src_path
-
-    return src
+    return Path(src)
 
 
 def must_ignore(path: Path, ignore: Sequence[str]) -> bool:
@@ -155,10 +162,9 @@ def make_folder(root_path: Path, rel_folder: str | Path) -> None:
     if path.exists():
         return
 
-    rel_folder = str(rel_folder).rstrip(".")
-    display = f"{rel_folder}{os.path.sep}"
-    path.mkdir(parents=True, exist_ok=False)
-    if rel_folder:
+    path.mkdir(parents=True, exist_ok=True)
+    if path != root_path:
+        display = f"{rel_folder}{os.path.sep}"
         printf("create", display, color=COLORS.OK)
 
 
@@ -177,7 +183,7 @@ def copy_file(
     else:
         printf("create", dst_relpath, color=COLORS.OK)
 
-    shutil.copy2(str(src_path), str(dst_path))
+    shutil.copy2(src_path, dst_path)
 
 
 def append_to_file(root_path: Path, dst_relpath: str | Path, new_content: str) -> None:
@@ -218,6 +224,15 @@ def prepend_to_file(root_path: Path, dst_relpath: str | Path, new_content: str) 
     dst_path.write_text(new_content)
 
 
+def delete_file(root_path: Path, dst_relpath: str | Path) -> None:
+    dst_path = root_path / dst_relpath
+    if dst_path.exists():
+        dst_path.unlink()
+        printf("delete", dst_relpath, color=COLORS.WARNING)
+    else:
+        printf("skipped", dst_relpath, color=COLORS.WARNING)
+
+
 def save_file(
     root_path: Path, dst_relpath: str | Path, content: str, *, force=False
 ) -> None:
@@ -237,7 +252,7 @@ def save_file(
 
 
 def files_are_identical(src_path: Path, dst_path: Path) -> bool:
-    return filecmp.cmp(str(src_path), str(dst_path), shallow=False)
+    return filecmp.cmp(src_path, dst_path, shallow=False)
 
 
 def contents_are_identical(content: str, dst_path: Path) -> bool:
