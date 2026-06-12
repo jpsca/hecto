@@ -31,6 +31,10 @@ render_blueprint('gl:jpsca/base36.git', 'path/to/destination')
 
 # You can also specify a subfolder inside the repo using `#` as a separator:
 render_blueprint('gh:jpsca/base36.git#blueprint/new', 'path/to/destination')
+
+# And/or a branch, tag, or commit, with `@` after the `.git` suffix:
+render_blueprint('gh:jpsca/base36.git@v1.0', 'path/to/destination')
+render_blueprint('gh:jpsca/base36.git@v1.0#blueprint/new', 'path/to/destination')
 ```
 
 
